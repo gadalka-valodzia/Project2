@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'user',
     'list_operators',
     'list_prichini',
+    'list_actions',
 ]
 
 MIDDLEWARE = [
