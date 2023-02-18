@@ -1,6 +1,11 @@
+import datetime
+
 import requests
+from dateutil.relativedelta import relativedelta
+from django import forms
 from django.db import models
 from django.contrib.auth.models import Group, User
+from django.forms import ModelForm
 from transliterate import translit
 from django.contrib.contenttypes.models import ContentType
 from list_actions.models import Actions
@@ -10,6 +15,7 @@ from transliterate.discover import autodiscover
 from transliterate import get_available_language_codes, translit
 from transliterate.base import TranslitLanguagePack, registry
 from django.contrib.auth import get_user_model
+from project2 import settings
 
 autodiscover()
 
@@ -42,12 +48,17 @@ class User_reg(models.Model):
         verbose_name = 'Линые данные'
         verbose_name_plural = 'Личные данные'
 
-    NSP = models.CharField(max_length=40, null=True)  # ФИО сотрудника
-    password = models.CharField(max_length=40, null=True)  # Пароль
-    adressat = models.ForeignKey(Operators, on_delete=models.CASCADE, null=True)  # Адрессат
-    action_id = models.ForeignKey(Actions, on_delete=models.CASCADE, null=True)
-    prichina_id = models.ForeignKey(Prichini, on_delete=models.CASCADE, null=True)
-    login = models.CharField(max_length=40, null=True, blank=True, editable=False)
+    NSP = models.CharField(max_length=40, null=True,verbose_name='ФИО',help_text='Формат: Фамилия Имя Отчество. В случае отсутствия одного из пунктов указать любую букву вместо')  # ФИО сотрудника
+    password = models.CharField(max_length=40, null=True, verbose_name='Пароль')  # Пароль
+    adressat = models.ForeignKey(Operators, on_delete=models.CASCADE, null=True,verbose_name= 'Адрессат')
+    action_id = models.ForeignKey(Actions, on_delete=models.CASCADE, null=True,verbose_name='Действие')
+    prichina_id = models.ForeignKey(Prichini, on_delete=models.CASCADE, null=True,verbose_name='Причина')
+    login = models.CharField(max_length=40, null=True, blank=True, editable=False,verbose_name='Логин') #Логин пользователя
+    data_vidachi=models.DateField(null=True, blank=True,verbose_name='Дата выдачи пароля')
+    data_okonchaniya = models.DateField(editable=False,null=True, blank=True,verbose_name='Дата окончания пароля')
+
+    def data(self):
+        return self.data_vidachi + relativedelta(months=10)
 
     def groups_g(self):
         a = User.objects.all()
@@ -60,7 +71,9 @@ class User_reg(models.Model):
 
     def save(self, *args, **kwargs):
         self.login = self.login_set()
+        self.data_okonchaniya=self.data()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.NSP}'
+

@@ -6,3 +6,5 @@ class Actions(models.Model):
         verbose_name = 'Действие'
         verbose_name_plural = 'Действия'
     name_action = models.CharField(max_length=40,verbose_name='Название')  # название действия
+    def __str__(self):
+        return f'{self.name_action}'

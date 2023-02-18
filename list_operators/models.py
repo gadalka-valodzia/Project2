@@ -7,4 +7,5 @@ class Operators(models.Model):
         verbose_name_plural = 'Операторы связи'
     name = models.CharField(max_length=40,verbose_name='Название')  # имя сотрудника
 
-# Create your models here.
+    def __str__(self):
+     return f'{self.name}'

@@ -6,7 +6,7 @@ from  .models import *
 # Register your models here.
 @admin.register(User_reg)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['NSP','login','password','adressat','action_id','prichina_id','groups_g']
+    list_display = ['NSP','login','password','adressat','action_id','prichina_id','groups_g','data_vidachi','data_okonchaniya']
     ordering = ['NSP']
     list_per_page = 10
     search_fields = ['NSP', 'self_phone_number', 'home_phone_number', 'passport_number']
