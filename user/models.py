@@ -43,33 +43,34 @@ registry.register(ExampleLanguagePack)
 _requests = {}
 
 
+
 class User_reg(models.Model):
     class Meta:
         verbose_name = 'Линые данные'
         verbose_name_plural = 'Личные данные'
 
     NSP = models.CharField(max_length=40, null=True,verbose_name='ФИО',help_text='Формат: Фамилия Имя Отчество. В случае отсутствия одного из пунктов указать любую букву вместо')  # ФИО сотрудника
-    password = models.CharField(max_length=40, null=True, verbose_name='Пароль')  # Пароль
-    adressat = models.ForeignKey(Operators, on_delete=models.CASCADE, null=True,verbose_name= 'Адрессат')
-    action_id = models.ForeignKey(Actions, on_delete=models.CASCADE, null=True,verbose_name='Действие')
+    password = models.CharField(max_length=40, null=True, verbose_name='Пароль',help_text='Длина пароля до 40 символов',blank=True)  # Пароль
+    adressat = models.ManyToManyField(Operators, null=True,verbose_name= 'Адрессат',blank=True)
+    action_id = models.ForeignKey(Actions, on_delete=models.CASCADE, null=True,verbose_name='Действие',blank=True)
     prichina_id = models.ForeignKey(Prichini, on_delete=models.CASCADE, null=True,verbose_name='Причина')
-    login = models.CharField(max_length=40, null=True, blank=True, editable=False,verbose_name='Логин') #Логин пользователя
-    data_vidachi=models.DateField(null=True, blank=True,verbose_name='Дата выдачи пароля')
+    login = models.CharField(max_length=40, null=True, blank=True, editable=False,verbose_name='Логин',help_text='Создается автоматически') #Логин пользователя
+    data_vidachi=models.DateField(null=True,verbose_name='Дата выдачи пароля')
     data_okonchaniya = models.DateField(editable=False,null=True, blank=True,verbose_name='Дата окончания пароля')
+    group_user= models.CharField(editable=False, null=True,blank=True,max_length=40,verbose_name='Группа пользователя')
 
-    def data(self):
+    def data(self): # Функция определения окончания пароля
         return self.data_vidachi + relativedelta(months=10)
 
-    def groups_g(self):
-        a = User.objects.all()
-        for b in a:
-             if b.is_authenticated:
-                 return b.groups.all().get().name
-    def login_set(self):
+    def login_set(self): # Функция генерации пароля на основе ФИО
         arg = u"{}_{[0]}{[0]}".format(*(translit(self.NSP.lower(), 'example')).split('_'))
         return arg
 
-    def save(self, *args, **kwargs):
+    def get_adressats(self):
+        return ",".join([str(p) for p in self.adressat.all()])
+
+
+    def save(self, *args, **kwargs): # Переопределение полей
         self.login = self.login_set()
         self.data_okonchaniya=self.data()
         super().save(*args, **kwargs)
